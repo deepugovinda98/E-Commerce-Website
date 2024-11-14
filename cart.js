@@ -17,18 +17,38 @@ function updateCart() {
                 <img src="${item.img}" class="card-img-top" alt="${item.name}">
                 <div class="card-body">
                     <h5 class="card-title">${item.name}</h5>
-                    <p class="card-text">${item.desc}</p>
                     <p><strong>Price:</strong> $${item.price.toFixed(2)}</p>
-                    <p><strong>Quantity:</strong> ${item.quantity}</p>
+                    <div class="d-flex align-items-center mb-3">
+                        <button class="btn btn-secondary decrement-btn" data-index="${index}">-</button>
+                        <input type="text" class="form-control text-center quantity-input" style="width: 50px;" value="${item.quantity}" data-index="${index}">
+                        <button class="btn btn-secondary increment-btn" data-index="${index}">+</button>
+                    </div>
+                    <p><strong>Total for item:</strong> $<span class="item-total">${(item.price * item.quantity).toFixed(2)}</span></p>
                     <button class="btn btn-danger remove-item" data-index="${index}">Remove</button>
                 </div>
             </div>
         `;
         cartItemsContainer.appendChild(itemDiv);
-        total += item.price * item.quantity; // Calculate total price
+        total += item.price * item.quantity; // Calculate total price for all items
     });
 
     totalPriceElement.innerText = total.toFixed(2);
+}
+
+// Function to handle increment and decrement of item quantity
+function updateQuantity(index, isIncrement) {
+    const quantityInput = document.querySelector(`.quantity-input[data-index="${index}"]`);
+    let quantity = parseInt(quantityInput.value);
+
+    if (isIncrement) {
+        quantity += 1;
+    } else if (quantity > 1) {
+        quantity -= 1;
+    }
+
+    cartItems[index].quantity = quantity; // Update quantity in cart array
+    localStorage.setItem("cart", JSON.stringify(cartItems)); // Save updated cart to local storage
+    updateCart(); // Update the cart display
 }
 
 // Function to remove a specific item from the cart
@@ -38,11 +58,15 @@ function removeItem(index) {
     updateCart(); // Update the cart display
 }
 
-// Event listener for remove buttons
+// Event listener for increment and decrement buttons
 document.getElementById("cart-items").addEventListener("click", (event) => {
-    if (event.target.classList.contains("remove-item")) {
-        const index = event.target.getAttribute("data-index");
-        removeItem(index);
+    const index = parseInt(event.target.getAttribute("data-index"));
+    if (event.target.classList.contains("decrement-btn")) {
+        updateQuantity(index, false); // Decrement quantity
+    } else if (event.target.classList.contains("increment-btn")) {
+        updateQuantity(index, true); // Increment quantity
+    } else if (event.target.classList.contains("remove-item")) {
+        removeItem(index); // Remove item
     }
 });
 
